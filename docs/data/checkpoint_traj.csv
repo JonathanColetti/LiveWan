@@ -1,0 +1,7 @@
+arm,step,mean_abs_decay_dev,mean_abs_drift,mean_motion,min_realtime_x,budget_met_all
+base,,0.0775,0.016,1.05,2.72,True
+v5,,0.1325,0.0555,2.6875,2.75,True
+s0750,750,0.075,0.0915,1.9125,2.49,True
+s1500,1500,0.0725,0.058,1.9275,2.43,True
+s2250,2250,0.0575,0.0178,2.165,2.77,True
+s3000,3000,0.1275,0.024,2.2075,2.76,True

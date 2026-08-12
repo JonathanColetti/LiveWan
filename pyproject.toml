@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "livewan"
+version = "0.1.0"
+description = "Streaming, steerable text-to-video inference for the Wan2.1-1.3B LiveWan student"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Jonathan Coletti" }]
+keywords = ["text-to-video", "streaming", "real-time", "wan2.1", "diffusion"]
+
+# Lower bounds are the versions this was built and tested against (see
+# requirements-lock.txt for the exact set). torch/torchvision are deliberately absent:
+# install the build that matches your GPU first, because the right wheel depends on
+# your card -- see the README's Minimum spec.
+dependencies = [
+    "einops>=0.8",
+    "numpy>=2.0",
+    "safetensors>=0.4",
+    "huggingface_hub>=0.30",
+    "transformers>=4.45",
+    "sentencepiece>=0.2",
+    "opencv-python-headless>=4.9",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "websockets>=12",
+    "pydantic>=2",
+    # the Wan2.1 reference package (`wan`) is installed from the checkout that
+    # setup.sh clones -- these are what it needs beyond our own list
+    "easydict",
+    "diffusers>=0.31",
+]
+
+[project.optional-dependencies]
+offline = ["imageio>=2.34", "imageio-ffmpeg>=0.5"]   # only mp4 writing needs these
+dev = ["requests>=2.31", "playwright>=1.40"]
+
+[project.scripts]
+livewan-serve = "wanstreamer.serve.server:main"
+
+[project.urls]
+Homepage = "https://github.com/JonathanColetti/LiveWan"
+Weights = "https://huggingface.co/JonathanColetti/LiveWan"
+
+[tool.setuptools]
+packages = ["wanstreamer", "wanstreamer.serve"]
+
+[tool.setuptools.package-data]
+"wanstreamer.serve" = ["web/*.html"]
