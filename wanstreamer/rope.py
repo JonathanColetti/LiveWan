@@ -2,25 +2,23 @@
 
 Two problems with upstream `wan.modules.model.rope_apply`:
 
-  1. It reconstructs its frequency tensor on EVERY call -- a float64 cat/expand/
-     reshape over the whole sequence -- and the streaming path calls it twice per
-     block, 30 blocks per latent frame (60x per frame-forward). The profile in
-     PROGRESS.md §6 attributes a large share of the 55 ms frame-forward to this
-     kind of churn.
-  2. It has no temporal offset, so the streaming path (which patch-embeds one
-     latent frame at a time, giving grid f=1) always indexes freqs[0][:1] --
+  1. It reconstructs its frequency tensor on EVERY call (a float64 cat/expand/
+     reshape over the whole sequence) and the streaming path calls it twice per
+     block, 30 blocks per latent frame (60x per frame-forward). T
+  2. It has no temporal offset, so the streaming path (which patch embeds one
+     latent frame at a time, giving grid f=1) always indexes freqs[0][:1] (
      temporal position 0 for every frame. Measured in diag/rope_probe.py: using
      the true absolute frame index instead cuts normalised flow error by up to
      3.2x, because the pretrained backbone still expects real temporal RoPE.
 
-This module precomputes the per-frame frequency table once per (resolution,
+This module precomputes the per frame frequency table once per (resolution,
 max_frames) and reduces application to one complex multiply.
 """
 import torch
 
 
 class RopeTable:
-    """Per-temporal-index RoPE frequency tables for a fixed spatial grid.
+    """Per temporal index RoPE frequency tables for a fixed spatial grid.
 
     freqs: the model's [1024, c] complex buffer (WanModel.freqs), c = head_dim/2.
     Table t holds the flattened (1, h, w) grid at temporal position t, shaped
