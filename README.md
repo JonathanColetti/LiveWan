@@ -1,5 +1,20 @@
 # LiveWan
 
+<p>
+<a href="https://huggingface.co/spaces/JonathanColetti/LiveWan">
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-md-dark.svg">
+<img alt="Run the live demo on Hugging Face Spaces" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-md.svg">
+</picture>
+</a>
+<a href="https://huggingface.co/JonathanColetti/LiveWan">
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md-dark.svg">
+<img alt="Weights and data on Hugging Face" src="https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md.svg">
+</picture>
+</a>
+</p>
+
 Streaming text-to-video you can steer while it runs.
 
 A 1.3 B student, distilled from a Wan2.1-T2V-14B teacher, that generates video
