@@ -11,6 +11,10 @@ Weights and data: [JonathanColetti/LiveWan](https://huggingface.co/JonathanColet
 
 ## See it run
 
+Check out the free demo:
+[Spaces](https://huggingface.co/spaces/JonathanColetti/LiveWan)
+
+
 Three screen recordings of the browser demo on an A100-40GB. The previews below are sped
 up and silent; each one links to the full-speed video.
 
