@@ -1,7 +1,6 @@
 """Block-causal streaming forward for Wan2.1, corrected and de-overheaded.
 
-Corrections relative to streaming_blocks.py, each backed by a measurement
-recorded in PROGRESS.md:
+Corrections relative to streaming_blocks.py:
 
   1. TIMESTEP SCALE. final.pt was fine-tuned with t in [0,1]
      (train_streaming.py:152 draws torch.rand()), not the scheduler's [0,1000].
