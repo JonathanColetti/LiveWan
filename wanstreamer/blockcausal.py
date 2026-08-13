@@ -9,7 +9,7 @@ trained under is literally the code that runs at deployment.
 The contract in both cases is the papers' "KV construction": the past is a
 *clean* (t=0) key/value prefix laid down by an earlier pass, and the current
 block is the only thing carrying noise. Block-causality is therefore structural
--- the key set only ever holds past + current -- so no attention mask is needed
+(the key set only ever holds past + current)  so no attention mask is needed
 over it, and adding one would wrongly serialise tokens within a block.
 
 Two ways to run the noisy blocks of a clip, both against the same clean prefix:
@@ -24,9 +24,9 @@ PER-FRAME TIMESTEP CONDITIONING (v0.2). Upstream Wan folds one shared `e0` into
 every token, so a sequence mixing a clean past with a noisy present is
 inexpressible in a single forward. `time_embed` here accepts a per-latent-frame
 vector, giving modulation [F, 6, dim] applied to x viewed as [B, F, S, dim].
-With the pre-computed clean K/V above it is not *required*. The clean prefix
+With the pre-computed clean K/V above it is not required. The clean prefix
 is laid down by its own t=0 pass -- but it is what makes a block of mixed noise
-levels expressible at all, and a uniform scalar collapses to upstream's
+levels expressible at all, and a uniform scalar collapses to upstreams
 behaviour exactly, so the original weights load and run unchanged.
 """
 import torch
@@ -61,7 +61,7 @@ def time_embed(model, t, device, time_scale=1000.0):
 
 
 class Modulation:
-    """Per-layer AdaLN chunks for one set of timesteps.
+    """Per layer AdaLN chunks for one set of timesteps.
 
     `(block.modulation + e0).chunk(6)` is identical for every token of a frame,
     so it is computed once per denoising step rather than per layer x frame.
@@ -139,7 +139,7 @@ def apply_rope(x, tbl):
     return torch.view_as_real(xc * tbl).flatten(3)
 
 
-# ------------------------------------------------------------------- K/V stores
+#  K/V stores
 class BufferKV:
     """Adapter over the preallocated StreamingKVCache used at inference."""
 
@@ -217,7 +217,7 @@ class TrainKV:
         return torch.cat([k, pk], 1), torch.cat([v, pv], 1), k_lens
 
 
-# ------------------------------------------------------------------- the layer
+#  the layer
 def _layer(blk, x, ec, tbl, kv_ctx, ctx, ctx_lens, dtype, per_frame, n_frames):
     """One WanAttentionBlock in block-causal mode. kv_ctx(k,v) -> (K, V, k_lens)."""
     sa_in = _modulate(x, blk.norm1, ec[0], ec[1], per_frame, n_frames)
@@ -304,7 +304,7 @@ def _unpatchify(model, x, gf, gh, gw):
     return u.reshape(b, c, gf * p0, gh * p1, gw * p2)
 
 
-# --------------------------------------------------------------- entry points
+#  entry points
 def block_forward(model, z, t, t_start, rope, ctx, ctx_lens, kv=None,
                   collect=None, dtype=torch.bfloat16, time_scale=1000.0,
                   prefix_upto=None, per_frame=False, grad_checkpoint=False,
