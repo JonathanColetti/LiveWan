@@ -70,33 +70,32 @@ class FewStepStreamer:
         self.kv = bc.BufferKV(self.cache)
         self.n_world = 0
         self.n_frames = 0
-        # Training-only: pushes the event window this far from the pinned world
+        # Training only: pushes the event window this far from the pinned world
         # in RoPE index space, simulating a long stream. At deployment the gap
         # arises naturally from evicted events, so this stays 0.
         self.rope_gap = 0
-        # per-channel moment matching towards the world (0 = off); see _renorm
+        # per channel moment matching towards the world (0 = off); see _renorm
         self.latent_norm = 0.0
         self.ref_stats = None
         self.graphs = SteadyStateGraphs() if cuda_graphs else None
         # "Noisy context": commit the K/V the LAST denoising step already wrote
         # instead of re-running the finished block at t=0. That drops the cost
-        # of a unit from N+1 forwards to N -- a third of the latency at N=2,
-        # which is the single largest inference-cost lever left in this loop.
-        # It is NOT a free inference-time swap: every committed key then comes
-        # from a latent at the schedule's lowest noise level rather than a clean
+        # of a unit from N+1 forwards to N (a third of the latency at N=2,
+        # which is the single largest inference cost lever left in this loop)
+        # It is NOT a free inference time swap: every committed key then comes
+        # from a latent at the schedules  lowest noise level rather than a clean
         # one, and Stage 1 and DMD both trained against a clean prefix. Turning
         # it on without retraining under the same convention changes the
         # conditioning the student was distilled for. Exposed here so the
         # latency claim can be measured before that training is paid for.
         self.noisy_context = noisy_context
 
-    # ------------------------------------------------------------------ context
     def set_text(self, ctx_emb, ctx_lens=None):
         self.ctx = ctx_emb
         # Resolve "is a cross-attention mask needed?" ONCE, here, and store None
         # if it is not. Deciding it inside the forward costs a `.item()` on a
-        # device tensor -- a host sync, which is illegal during CUDA graph
-        # capture. Contexts are padded to the full text length (upstream's own
+        # device tensor ( a host sync, which is illegal during CUDA graph
+        # capture) Contexts are padded to the full text length (upstream's own
         # WanModel.forward passes context_lens=None for exactly this reason), so
         # None is not an approximation, it is the same computation.
         full = ctx_emb.shape[1]
@@ -152,7 +151,7 @@ class FewStepStreamer:
         if excess > 0:
             self.cache.evict_front(excess, protect=protect)
 
-    # -------------------------------------------------------------------- world
+    # world
     @torch.no_grad()
     def set_world(self, world_latents):
         """Prime the cache from clean world latents, attended bidirectionally."""
@@ -195,7 +194,7 @@ class FewStepStreamer:
         z_n = (z - zm) / (zs + 1e-5) * sd.to(z.dtype) + mu.to(z.dtype)
         return (1.0 - strength) * z + strength * z_n
 
-    # ------------------------------------------------------------------- events
+    #  events
     def generate_block(self, generator=None, record=None, n_frames=None):
         """Emit one streaming unit. Returns clean latents [1, C, b, H, W]."""
         b = n_frames or self.block_frames
@@ -213,8 +212,8 @@ class FewStepStreamer:
             if tn == 0.0:
                 z = x0
             elif self.sampler == 'renoise':
-                # DMD-distilled few-step sampler: re-noise the x0 prediction to
-                # the next level with FRESH noise. This is the sampler the
+                # DMD distilled few-step sampler: re-noise the x0 prediction to
+                # the next level with fresh noise. This is the sampler the
                 # student is distilled under, so it is also the one it must be
                 # rolled out with.
                 eps = torch.randn(z.shape, device=z.device, dtype=z.dtype,
@@ -253,7 +252,7 @@ class FewStepStreamer:
                       f'cache {self.cache.num_tokens} tok)', flush=True)
         return torch.cat(lats, dim=1), times
 
-    # --------------------------------------------------- self-forcing rollout
+    #  self forcing rollout
     @torch.no_grad()
     def rollout_record(self, num_blocks, generator=None):
         """Roll out `num_blocks` units and keep what the DMD step needs.
