@@ -50,7 +50,7 @@ That is the documented limit - `WanModel.freqs` only carries tables for 1024 lat
 [How the streaming works](#how-the-streaming-works)). The picture is still holding
 together when it gets there.
 
-### Steering mid stream, and where it breaks
+### Steering mid stream
 
 [![Steering a waterfall scene to a lighthouse without clearing the cache](docs/media/steer-waterfall-to-lighthouse.gif)](docs/media/steer-waterfall-to-lighthouse.mp4)
 
