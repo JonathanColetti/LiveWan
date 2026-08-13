@@ -272,61 +272,14 @@ livewan-serve --token ""       # no auth at all
 ```
 
 A token in the query string is echoed back as a cookie, so `/?token=…` once is enough.
-**A short token is a short token**. On a public IP it is effectively an open GPU. Use a
+A short token is a short token. On a public IP it is effectively an open GPU. Use a
 long one, or leave the demo behind whatever reverse proxy your host already provides.
 
-## Layout
-
-```
-wanstreamer/              the inference core (imported as `wanstreamer`)
-  blockcausal.py   block-causal attention with an explicit K/V buffer
-  kvcache.py       the streaming cache: append, evict-front, pinned prefix
-  rope.py          RoPE tables with absolute frame indices and gap support
-  stream.py        FewStepStreamer ( the rollout loop the student is run under)
-  core.py          shared forwards, geometry, modulation cache
-  pipeline.py      the higher-level world/event pipeline
-  dmd.py, fsdp.py, lora.py, data.py, metrics.py, prompts*.py, text.py, graphrunner.py
-  serve/                  the browser demo (a shell over the core)
-    engine.py      sessions, threading, backpressure, JPEG framing
-    server.py      FastAPI + WebSocket    -> livewan-serve
-    worldgen.py    base-model text -> a new 21-frame opening world
-    streamdecode.py  VAE decoding that survives across blocks
-    conditioning.py  the 96-prompt bank + lazy umt5-xxl
-    auth.py, paths.py, web/index.html
-setup.sh                  fetches the weights ( the only script you need to run)
-scripts/                  training, evaluation, benchmarking, verification
-  train_dmd.py     the SF-DMD trainer
-  demo.py          offline streaming demo -> mp4
-  live_demo.py     the original browser demo
-  eval_matrix.py, verify_*.py, bench_*.py, gen_teacher.py, encode_prompts.py, ...
-  run/                    shell wrappers from the original training run
-    run_16gpu.sh       the 16-GPU launcher
-    run_b64_resume.sh  the batch-64 resume, with checkpoint preservation
-    run_b4_2h.sh       the 2 h batch-4 health proof
-    setup_16gpu.sh, gen_teacher_all.sh, presave_pruner.sh,
-    archive_milestones.sh, watchdog.sh
-  eval/                   evaluation wrappers and chart data
-    final_eval.sh      the 24-cell idle-GPU evaluation
-    export_charts.py   training logs -> docs/data/*.csv
-    make_readme_charts.py  docs/data/*.csv -> the SVGs in this README
-    eval_b4_2h.sh, post_run_eval.sh
-tools/                    sweeps, rescoring, video viewing
-wan21_patches/            required Wan2.1 patches (SDPA fallback, 640x368 configs)
-tests/                    core tests + serving-layer tests
-docs/                     HANDOFF.md, STATUS.md, START_HERE.md, RUN_16GPU.md, NOTES.md
-  media/           the demo recordings and chart SVGs embedded in this README
-  data/            the exported training/eval CSVs those charts are drawn from
-```
-
-Everything under `scripts/run/` and `scripts/eval/` is operational history from the
-original distillation run — kept because the model card and `docs/` refer to it, not
-because you need it to run the demo. Each one resolves the repository root from its own
-location, so they still work from anywhere: `./scripts/run/run_b64_resume.sh`.
 
 ## How the streaming works
 
 The checkpoint holds the **stock 825 Wan2.1-1.3B tensors** — nothing was added to the
-architecture. Streaming is entirely a matter of how the model is *run*, and all of that
+architecture. Streaming is entirely a matter of how the model is run, and all of that
 lives in `wanstreamer/`:
 
 * **Block-causal attention with a K/V cache.** The sequence grows in blocks of 3 latent
